@@ -588,6 +588,16 @@ h1,h2,h3,h4,h5{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,san
 .badge--trust{background:rgba(255,255,255,0.92);color:var(--gold-deep);border:1px solid rgba(194,31,102,0.25)}
 .badge__dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:0.75}
 
+@media (max-width:780px){
+  /* mobile cards shrink to ~half desktop width, but badges were staying full-size —
+     two stacked full-size badge pills were overlapping deep into the product photo
+     itself. Compact them and give the image proper top clearance instead. */
+  .card__badges{top:6px;left:6px;gap:3px;max-width:calc(100% - 40px)}
+  .badge{padding:3px 6px;font-size:6.5px;letter-spacing:0.06em;gap:3px;border-radius:2px}
+  .badge__dot{width:3px;height:3px}
+  .card__img{inset:26% 12% 10% 12%}
+}
+
 /* wishlist / compare hover cluster */
 .card__actions{
   position:absolute;top:12px;right:12px;z-index:4;
@@ -603,6 +613,11 @@ h1,h2,h3,h4,h5{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,san
 .card__ico:hover{background:var(--ink);color:var(--paper);transform:scale(1.06)}
 .card__ico svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.5}
 .card__ico--active{background:var(--ink);color:var(--paper)}
+@media (max-width:780px){
+  .card__actions{top:6px;right:6px}
+  .card__ico{width:26px;height:26px}
+  .card__ico svg{width:12px;height:12px}
+}
 
 /* compare checkbox — Fix 04 */
 .card__compare{
@@ -1460,9 +1475,8 @@ h1,h2,h3,h4,h5{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,san
     var idx = Number(idxStr);
     var entry = videoBySlide[idx];
     entry.el.addEventListener('ended', function(){
-      entry.count++;
-      if(entry.count >= 2){ entry.count = 0; next(); }
-      else { entry.el.currentTime = 0; entry.el.play(); }
+      entry.count = 0;
+      next();
     });
   });
 
