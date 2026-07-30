@@ -676,11 +676,13 @@ h1,h2,h3,h4,h5{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,san
 .spotlight__title{color:#fff;font-family:'Inter',sans-serif;font-weight:700;letter-spacing:-0.015em;font-size:clamp(22px,2.8vw,32px)}
 .spotlight__sub{color:rgba(255,255,255,0.8);font-size:13.5px;margin-top:8px}
 .spotlight__strip-wrap{position:relative}
-.spotlight__strip{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:4px 2px 6px}
-.spotlight__strip::-webkit-scrollbar{display:none}
+.spotlight__strip{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:32px 20px;
+  padding:4px 2px 6px;
+}
 .spotlight__card{
-  flex:0 0 auto;width:clamp(168px,20vw,232px);background:#fff;border-radius:16px;overflow:hidden;
-  scroll-snap-align:start;text-align:left;box-shadow:0 14px 30px rgba(0,0,0,0.25);
+  background:#fff;border-radius:16px;overflow:hidden;
+  text-align:left;box-shadow:0 14px 30px rgba(0,0,0,0.25);
   transition:transform 0.4s var(--ease-soft);
 }
 .spotlight__card:hover{transform:translateY(-3px)}
@@ -699,10 +701,11 @@ h1,h2,h3,h4,h5{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,san
 .spotlight__arrow svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8}
 .spotlight__arrow--prev{left:-8px}
 .spotlight__arrow--next{right:-8px}
+@media (max-width:1080px){.spotlight__strip{grid-template-columns:repeat(3,1fr)}}
 @media (max-width:780px){
   .spotlight__inner{padding:0 20px}
   .spotlight__arrow{display:none}
-  .spotlight__card{width:150px}
+  .spotlight__strip{grid-template-columns:repeat(2,1fr);gap:24px 12px}
 }
 
 /* wishlist / compare hover cluster */
@@ -861,6 +864,31 @@ h1,h2,h3,h4,h5{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,san
   position:relative;
 }
 .modal-veil--visible .modal{transform:translateY(0) scale(1);opacity:1}
+.modal--compare{width:min(920px,94vw)}
+.compare-table{
+  display:grid;grid-template-columns:repeat(var(--compare-n,4),minmax(150px,1fr));
+  gap:14px;overflow-x:auto;
+}
+.compare-col{border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative}
+.compare-col__remove{
+  position:absolute;top:8px;right:8px;z-index:2;width:22px;height:22px;border-radius:50%;
+  background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-1);
+}
+.compare-col__remove svg{width:9px;height:9px;stroke:var(--ink);stroke-width:2}
+.compare-col__img{aspect-ratio:1/1;background:linear-gradient(180deg,var(--cream),#F1EADE)}
+.compare-col__img img{width:100%;height:100%;object-fit:contain;padding:12%}
+.compare-col__body{padding:12px 12px 16px}
+.compare-col__name{font-size:13px;font-weight:600;line-height:1.3;margin-bottom:6px;min-height:34px}
+.compare-col__price{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;margin-bottom:10px}
+.compare-col__specs{display:flex;flex-direction:column;gap:7px;font-size:11.5px;border-top:1px solid var(--line);padding-top:10px}
+.compare-col__spec{display:flex;justify-content:space-between;gap:6px;color:var(--muted)}
+.compare-col__spec strong{color:var(--ink);font-weight:600;text-align:right}
+.compare-col__link{display:block;margin-top:12px;text-align:center;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;font-weight:600;padding:9px;border:1px solid var(--ink);border-radius:8px;transition:background 0.3s var(--ease),color 0.3s var(--ease)}
+.compare-col__link:hover{background:var(--ink);color:var(--paper)}
+@media (max-width:720px){
+  .modal--compare{width:100%}
+  .compare-table{grid-auto-flow:column;grid-auto-columns:150px;grid-template-columns:none}
+}
 .modal__close{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;background:var(--cream);display:flex;align-items:center;justify-content:center;transition:background 0.3s var(--ease)}
 .modal__close:hover{background:var(--line)}
 .modal__close svg{width:14px;height:14px;stroke:var(--ink);fill:none;stroke-width:1.6}
@@ -1435,6 +1463,20 @@ h1,h2,h3,h4,h5{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,san
     <div class="compare-tray__slot"></div>
   </div>
   <button class="compare-tray__cta" id="compareCta" disabled>Compare</button>
+</div>
+
+<!-- =================================================================
+     COMPARE MODAL — populated from real product data on open
+     ================================================================= -->
+<div class="modal-veil" id="compareModal" role="dialog" aria-modal="true" aria-labelledby="compareModalTitle">
+  <div class="modal modal--compare">
+    <button class="modal__close" data-close-modal aria-label="Close"><svg viewBox="0 0 14 14"><path d="M2 2l10 10M12 2l-10 10"/></svg></button>
+    <div class="modal__head">
+      <h2 class="modal__title" id="compareModalTitle">Compare rings</h2>
+      <p class="modal__sub" id="compareModalSub"></p>
+    </div>
+    <div class="modal__body" id="compareModalBody"></div>
+  </div>
 </div>
 
 <!-- =================================================================
@@ -2025,6 +2067,52 @@ function renderCompare(){
   compareCta.disabled = arr.length < 2;
   tray.classList.toggle("compare-tray--visible", arr.length > 0);
 }
+
+/* build and open the compare modal from real product data */
+const compareModal = document.getElementById("compareModal");
+const compareModalBody = document.getElementById("compareModalBody");
+const compareModalSub = document.getElementById("compareModalSub");
+function openCompareModal(){
+  const arr = Array.from(compareState);
+  if (arr.length < 2) return;
+  compareModalSub.textContent = `${arr.length} ring${arr.length > 1 ? "s" : ""} side by side`;
+  compareModalBody.style.setProperty("--compare-n", arr.length);
+  compareModalBody.innerHTML = `<div class="compare-table">${arr.map(sku => {
+    const p = PRODUCTS.find(x => x.sku === sku);
+    const imgUrl = IMG_B64[(p.imgKeys && p.imgKeys[0])] || "";
+    return `
+      <div class="compare-col">
+        <button class="compare-col__remove" data-compare-modal-remove="${sku}" aria-label="Remove ${p.name}">
+          <svg viewBox="0 0 12 12"><path d="M2 2l8 8M10 2l-8 8"/></svg>
+        </button>
+        <div class="compare-col__img"><img src="${imgUrl}" alt="${p.name}" width="150" height="150"></div>
+        <div class="compare-col__body">
+          <div class="compare-col__name">${p.name}</div>
+          <div class="compare-col__price">${fmt(p.price)}</div>
+          <div class="compare-col__specs">
+            <div class="compare-col__spec"><span>Metal</span><strong>${p.metal}</strong></div>
+            <div class="compare-col__spec"><span>Collection</span><strong>${p.collection}</strong></div>
+            <div class="compare-col__spec"><span>Offer</span><strong>${p.mcOff}</strong></div>
+          </div>
+          <a class="compare-col__link" href="${p.url}" target="_blank" rel="noopener">View details</a>
+        </div>
+      </div>`;
+  }).join("")}</div>`;
+  openModal(compareModal);
+}
+compareCta.addEventListener("click", () => { if (!compareCta.disabled) openCompareModal(); });
+compareModalBody.addEventListener("click", (e) => {
+  const rm = e.target.closest("[data-compare-modal-remove]");
+  if (!rm) return;
+  const sku = rm.dataset.compareModalRemove;
+  compareState.delete(sku);
+  const cardBtn = document.querySelector(`.card[data-sku="${sku}"] [data-compare]`);
+  if (cardBtn){ cardBtn.classList.remove("card__compare--checked"); cardBtn.setAttribute("aria-pressed","false"); }
+  renderCompare();
+  if (compareState.size < 2) closeModal(compareModal);
+  else openCompareModal();
+});
+
 document.body.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-compare]");
   if (btn){
