@@ -650,11 +650,12 @@ h1,h2,h3,h4,h5{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,san
    of the grid's own side padding so the background still reads full-bleed */
 .grid > .spotlight{
   grid-column:1/-1;
-  position:relative;
   width:100vw;
+  position:relative;
   left:50%;right:50%;
   margin-left:-50vw;margin-right:-50vw;
 }
+.grid > .hero{grid-column:1/-1}
 .spotlight--men{background:radial-gradient(130% 150% at 50% -10%, #3A322D 0%, #1F1A17 55%, #0D0B0A 100%)}
 .spotlight::before{
   content:"";position:absolute;inset:0;pointer-events:none;opacity:0.9;
@@ -1520,6 +1521,7 @@ h1,h2,h3,h4,h5{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,san
   </div>
 </div>
 
+<template id="heroTpl">
 <!-- =================================================================
      HERO — real BBF ring campaign, immersive depth (radial glow +
      gold halo + rotating orbit + stamp), layered motion (Lever 10)
@@ -1582,6 +1584,8 @@ h1,h2,h3,h4,h5{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,san
     </div>
   </div>
 </section>
+</template>
+
 
 <!-- ================= FOOTER ================= -->
 <footer class="footer">
@@ -1814,6 +1818,10 @@ PRODUCTS.forEach((p, i) => {
   if (i === 11){
     const tpl = document.getElementById('spotlightFioraTpl');
     if (tpl) grid.appendChild(tpl.content.cloneNode(true));
+  }
+  if (i === 17){
+    const heroTpl = document.getElementById('heroTpl');
+    if (heroTpl) grid.appendChild(heroTpl.content.cloneNode(true));
   }
 });
 
