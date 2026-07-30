@@ -646,6 +646,15 @@ h1,h2,h3,h4,h5{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,san
    ========================================================================= */
 .spotlight{position:relative;overflow:hidden;padding:clamp(40px,6vw,72px) 0}
 .spotlight--fiora{background:radial-gradient(130% 150% at 50% -10%, #E4327E 0%, #B01464 45%, #6E0C3C 100%)}
+/* when sandwiched inside the product grid: span every column and break out
+   of the grid's own side padding so the background still reads full-bleed */
+.grid > .spotlight{
+  grid-column:1/-1;
+  position:relative;
+  width:100vw;
+  left:50%;right:50%;
+  margin-left:-50vw;margin-right:-50vw;
+}
 .spotlight--men{background:radial-gradient(130% 150% at 50% -10%, #3A322D 0%, #1F1A17 55%, #0D0B0A 100%)}
 .spotlight::before{
   content:"";position:absolute;inset:0;pointer-events:none;opacity:0.9;
@@ -1191,6 +1200,7 @@ h1,h2,h3,h4,h5{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,san
   </div>
 </section>
 
+<template id="spotlightFioraTpl">
 <!-- =================================================================
      SPOTLIGHT — Mia Fiora (real collection, real products)
      ================================================================= -->
@@ -1236,6 +1246,7 @@ h1,h2,h3,h4,h5{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,san
     </div>
   </div>
 </section>
+</template>
 
 <!-- =================================================================
      GRID INTRO HEADING — frames filters + toolbar + grid as one section.
@@ -1800,6 +1811,10 @@ PRODUCTS.forEach((p, i) => {
     </div>
   `;
   grid.appendChild(el);
+  if (i === 11){
+    const tpl = document.getElementById('spotlightFioraTpl');
+    if (tpl) grid.appendChild(tpl.content.cloneNode(true));
+  }
 });
 
 /* ---------- card image gallery: swipe + arrow navigation (event delegation) ---------- */
