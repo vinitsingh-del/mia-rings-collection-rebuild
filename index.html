@@ -603,11 +603,11 @@ h1,h2,h3,h4,h5{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,san
 .card__gallery-arrow{
   position:absolute;top:50%;transform:translateY(-50%);z-index:4;
   width:24px;height:24px;border-radius:50%;display:grid;place-items:center;
-  background:rgba(255,255,255,0.85);color:var(--ink);opacity:0;
-  transition:opacity 0.25s var(--ease);box-shadow:var(--shadow-1);
+  background:rgba(255,255,255,0.85);color:var(--ink);opacity:0.85;
+  transition:opacity 0.25s var(--ease),background 0.25s var(--ease);box-shadow:var(--shadow-1);
 }
 .card__gallery-arrow svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2}
-.card:hover .card__gallery-arrow{opacity:1}
+.card__gallery-arrow:hover{opacity:1;background:#fff}
 .card__gallery-arrow--prev{left:4px}
 .card__gallery-arrow--next{right:4px}
 @media (hover:none){.card__gallery-arrow{display:none}}
@@ -1873,6 +1873,44 @@ PRODUCTS.forEach((p, i) => {
     }
     dragState = null;
   });
+
+  /* auto-advance: once a multi-image card scrolls into view, its images cycle
+     on their own — paused on hover (so the manual arrows/swipe stay predictable)
+     and paused off-screen (no point animating what isn't visible). */
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduceMotion){
+    const timers = new WeakMap();
+    function startAuto(galleryEl){
+      if (timers.has(galleryEl)) return;
+      timers.set(galleryEl, setInterval(() => {
+        setIdx(galleryEl, Number(galleryEl.dataset.idx) + 1);
+      }, 2200));
+    }
+    function stopAuto(galleryEl){
+      const t = timers.get(galleryEl);
+      if (t){ clearInterval(t); timers.delete(galleryEl); }
+    }
+    const galleryIo = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const galleryEl = entry.target;
+        if (entry.isIntersecting) startAuto(galleryEl);
+        else stopAuto(galleryEl);
+      });
+    }, { threshold: 0.4 });
+    document.querySelectorAll('[data-gallery]').forEach(galleryEl => {
+      if (Number(galleryEl.dataset.count) > 1) galleryIo.observe(galleryEl);
+    });
+    grid.addEventListener('mouseenter', (e) => {
+      const galleryEl = e.target.closest && e.target.closest('[data-gallery]');
+      if (galleryEl) stopAuto(galleryEl);
+    }, true);
+    grid.addEventListener('mouseleave', (e) => {
+      const galleryEl = e.target.closest && e.target.closest('[data-gallery]');
+      if (galleryEl && galleryEl.getBoundingClientRect().top < window.innerHeight && galleryEl.getBoundingClientRect().bottom > 0){
+        startAuto(galleryEl);
+      }
+    }, true);
+  }
 })();
 
 /* ---------- intersection reveal ---------- */
