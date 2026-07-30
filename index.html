@@ -588,8 +588,15 @@ h1,h2,h3,h4,h5{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,san
    render (via JS) when a product genuinely has more than one real photo. */
 .card__img{position:absolute;inset:14%;z-index:2;filter:drop-shadow(0 12px 24px rgba(138,109,61,0.22));overflow:hidden;touch-action:pan-y}
 .card__gallery-track{display:flex;height:100%;transition:transform 0.35s var(--ease-soft)}
-.card__gallery-track img{flex:0 0 100%;width:100%;height:100%;object-fit:contain;-webkit-user-drag:none;user-select:none}
-.card:hover .card__gallery-track img{transform:scale(1.04);transition:transform 1.2s var(--ease-soft)}
+.card__gallery-track img{
+  flex:0 0 100%;width:100%;height:100%;object-fit:contain;-webkit-user-drag:none;user-select:none;
+  transform:scale(0.86);transition:transform 1s var(--reveal-ease);
+}
+/* zoom-in on entrance: image scales up to its normal size as the card scrolls
+   into view, so the ring settles into full, clear focus rather than just
+   fading in flat. Same trigger as the card's own reveal — no separate observer. */
+.card.in .card__gallery-track img{transform:scale(1)}
+.card.in:hover .card__gallery-track img{transform:scale(1.04);transition:transform 1.2s var(--ease-soft)}
 .card__gallery-dots{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);z-index:3;display:flex;gap:4px;pointer-events:none}
 .card__gallery-dot{width:4px;height:4px;border-radius:50%;background:rgba(26,22,20,0.22);transition:background 0.25s var(--ease),width 0.25s var(--ease)}
 .card__gallery-dot--active{width:12px;border-radius:3px;background:var(--gold)}
@@ -926,6 +933,7 @@ h1,h2,h3,h4,h5{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,san
     scroll-behavior:auto !important;
   }
   .card{opacity:1;transform:none}
+  .card__gallery-track img{transform:scale(1)}
 }
 
 /* screen-reader-only */
